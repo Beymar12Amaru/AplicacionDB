@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AplicacionDB">
         <activity
+            android:name=".database.AddUsuarios"
+            android:exported="false" />
+        <activity
             android:name=".ListaUsuarios"
             android:exported="false" />
         <activity

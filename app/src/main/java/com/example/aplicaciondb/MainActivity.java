@@ -1,11 +1,14 @@
 package com.example.aplicaciondb;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -19,10 +22,8 @@ import com.example.aplicaciondb.database.UsuarioContract;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    EditText InputNombre;
-    EditText InputApellido;
-    Button btnRegistrarse;
+    private DbHelper dbHelper;
+    private ListView listaUsuarios;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,34 +36,51 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        dbHelper = new DbHelper(this);
+        listaUsuarios = findViewById(R.id.ListaID);
+        cargarDatos();
+    }
 
-        InputNombre = findViewById(R.id.InputNombre);
-        InputApellido = findViewById(R.id.InputApellido);
-        btnRegistrarse = findViewById(R.id.btnRegistrarte);
+    private void cargarDatos(){
 
-        btnRegistrarse.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DbHelper dbHelper = new DbHelper(MainActivity.this);
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-                String Nombre = InputNombre.getText().toString();
-                String Apellido = InputApellido.getText().toString();
+        String[] projection = {
+                UsuarioContract.UsuarioEntry.COLUMN_ID,
+                UsuarioContract.UsuarioEntry.COLUMN_NAME,
+                UsuarioContract.UsuarioEntry.COLUMN_APELLIDO
+        };
 
-                ContentValues values = new ContentValues();
-                values.put(UsuarioContract.UsuarioEntry.COLUMN_NAME, Nombre);
-                values.put(UsuarioContract.UsuarioEntry.COLUMN_APELLIDO, Apellido);
+        Cursor cursor = db.query(
+                UsuarioContract.UsuarioEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
 
-                long newId = db.insert(UsuarioContract.UsuarioEntry.TABLE_NAME, null, values);
 
+        String[] fromColumns = {
+                UsuarioContract.UsuarioEntry.COLUMN_NAME,
+                UsuarioContract.UsuarioEntry.COLUMN_APELLIDO
+        };
 
-                if(newId != 1) {
-                    Toast.makeText(MainActivity.this, "se guardo correctamente", Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    Toast.makeText(MainActivity.this, "Usuario no se guardo", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        int[] LosViews = {
+                R.id.textoObtenerNombre,
+                R.id.textoObtenerApellido
+        };
+
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.activity_lista_usuarios,
+                cursor,
+                fromColumns,
+                LosViews,
+                0
+        );
+
+        listaUsuarios.setAdapter(adapter);
     }
 }
